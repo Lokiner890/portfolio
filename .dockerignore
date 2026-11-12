@@ -1,0 +1,19 @@
+node_modules
+.next
+coverage
+.vitest
+.scannerwork
+eslint-report.json
+*.tsbuildinfo
+next-env.d.ts
+# not needed for the build, a change there shouldn't invalidate the Docker build cache
+.git
+.github
+.husky
+.vscode
+.idea
+**/*.md
+# .env is NOT excluded: the release workflow downloads it from S3 before `docker build`,
+# and `next build` inside the image reads it, see "Environment variables in deploy" in README.md
+.env.*
+!.env.example

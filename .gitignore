@@ -1,0 +1,34 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+#IDE
+.vscode
+.idea
+
+# dependencies
+/node_modules
+
+# testing
+/coverage
+# vitest json / junit / blob reports (e.g. from the IDE Vitest extension)
+/.vitest
+/eslint-report.json
+/.scannerwork
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+
+# typescript
+*.tsbuildinfo
+
+# misc
+.DS_Store
+*.pem
+# env files, values come from S3 in deploy, see README.md
+.env*
+!.env.example
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

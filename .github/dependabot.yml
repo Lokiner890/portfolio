@@ -1,0 +1,31 @@
+# Weekly pull requests with dependency updates, against the default branch (dev).
+# Security updates are separate: enable "Dependabot security updates" in the repository settings.
+# https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    # a new version is proposed only after it has been published for a week,
+    # so a broken or malicious release is usually found and removed before that
+    cooldown:
+      default-days: 7
+    groups:
+      # minor and patch updates in one pull request, every major update in its own
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # types for the Node.js version the app runs on (.nvmrc), update together with Node.js
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns: ['*']

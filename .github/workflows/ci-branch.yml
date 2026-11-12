@@ -1,0 +1,68 @@
+name: Analyze Branch
+
+on:
+  push:
+    branches:
+      - dev
+      - staging
+      - production
+
+permissions:
+  contents: read
+
+# a newer push to the same branch / pull request cancels the run that is still going
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: [self-hosted, coax]
+    timeout-minutes: 30
+    env:
+      HUSKY: 0 # git hooks are not needed in CI
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - name: 'Checkout repository on branch: ${{ github.ref_name }}'
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # full history, SonarQube needs it for blame and new code detection
+      - name: Setup NodeJS
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install packages
+        run: npm ci
+      - name: Run Lint
+        run: npm run lint:ci
+      - name: Run Type Check
+        run: npm run ts:check
+      - name: Run Tests
+        run: npm run test:ci
+      # reuses the Next.js build cache between runs, https://nextjs.org/docs/app/guides/ci-build-caching
+      - name: Cache Next.js build
+        uses: actions/cache@v6
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'public/**', '*.ts', '*.js') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('package-lock.json') }}-
+      # checks that the app builds; without .env, the NEXT_PUBLIC_* values are empty (Sentry is off)
+      - name: Build
+        run: npm run build
+      - name: Analyze with SonarQube
+        uses: SonarSource/sonarqube-scan-action@v8
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=${{ github.event.repository.name }}
+            -Dsonar.scm.provider=git
+            -Dsonar.sources=src/
+            -Dsonar.eslint.reportPaths=eslint-report.json
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.exclusions=public/**,src/__tests__/**,src/__mocks__/**,src/components/icons/**,.next/**,Dockerfile,next.config.ts,vitest.config.ts,eslint.config.js,sentry.server.config.ts,sentry.edge.config.ts
+            -Dsonar.coverage.exclusions=src/instrumentation.ts,src/instrumentation-client.ts,src/app/layout.tsx,src/app/opengraph-image.tsx,src/types/**
+            -Dsonar.branch.name=${{ github.ref_name }}
