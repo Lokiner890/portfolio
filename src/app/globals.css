@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-jura), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #fff;
+  }
+}
+
+@keyframes hex-gradient-shift {
+  0%,
+  100% {
+    background-position: 0% 40%;
+  }
+
+  50% {
+    background-position: 100% 60%;
+  }
+}
+
+@keyframes hex-tip {
+  0%,
+  100% {
+    transform: rotateY(-10deg);
+  }
+
+  50% {
+    transform: rotateY(10deg);
+  }
+}
+
+.hex-face {
+  color: white;
+  background: linear-gradient(
+    125deg,
+    #ffffff 0%,
+    #cfcfcf 20%,
+    #8a8a8a 40%,
+    #2e2e2e 60%,
+    #000000 80%,
+    #bdbdbd 100%
+  );
+  background-size: 220% 220%;
+  animation: hex-gradient-shift 5s ease-in-out infinite;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.hex-face::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: #141414;
+  clip-path: inherit;
+  z-index: -1;
+}
+
+.hex-tip {
+  animation: hex-tip 3.2s ease-in-out infinite;
+}
+
+.group:hover .hex-tip,
+.group:focus-visible .hex-tip {
+  animation-play-state: paused;
+}
+
+.hex-flip {
+  transform: rotateY(0deg);
+  transition: transform 1.15s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.group:hover .hex-flip,
+.group:focus-visible .hex-flip {
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hex-face,
+  .hex-tip {
+    animation: none;
+  }
+
+  .hex-flip {
+    transition: none;
+  }
+}
